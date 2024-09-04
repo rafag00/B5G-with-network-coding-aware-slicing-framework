@@ -6,7 +6,7 @@ This work is done in order of a master degree that as the objective of enhance t
 ## Repository organization
 
 ```
-NETWORK_CODING-AWARE_SLICING
+B5G-with-network-coding-aware-slicing-framework
 |   
 +---mininetTopo
 |       
