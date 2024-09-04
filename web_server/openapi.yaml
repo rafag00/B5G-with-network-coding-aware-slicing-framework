@@ -1,0 +1,492 @@
+openapi: 3.0.3
+info:
+  title: Boosting 5G with Network Coding-Aware Slicing
+  description: |
+    This is an API for informing an SDN controller of potential network slices in its infrastructure, requesting infrastructure information to improve Network Coding algorithms and introduce link metrics of the infrastructure.
+    Used in the work [♠](https://www.overleaf.com/project/65c4bf4599ae6fb64d611bf0)
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: rafaelg@student.dei.uc.pt
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: https://127.0.0.1
+tags:
+  - name: Network slices
+    description: Network slice information for the SDN-C
+  - name: Links
+    description: Link metrics information for the SDN-C
+  - name: Flow Rules
+    description: Flow rules for the network coding algorithm
+paths:
+  /slice:
+    post:
+      tags:
+        - Network slices
+      summary: Add an array of network slices to the infrastructure
+      description: Add an array of network slices to the infrastructure
+      operationId: addSlice
+      requestBody:
+        description: Create new network slices in the infrastructure
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SliceCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slice'
+        '400':
+          description: Invalid input
+        '500':
+          description: Internal error
+    get:
+      tags:
+        - Network slices
+      summary: Gets the existing network slices in the infrastructure
+      description: Gets the existing network slices in the infrastructure
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slice'
+        '500':
+          description: Internal error
+  /slice/{sliceId}:
+    get:
+      tags:
+        - Network slices
+      summary: Find a network slice by ID
+      description: Returns a single network slice
+      operationId: getSliceById
+      parameters:
+        - name: sliceId
+          in: path
+          description: ID of network slice to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slice'
+        '404':
+          description: Network slice not found
+        '500':
+          description: Internal error
+    put:
+      tags:
+        - Network slices
+      summary: Updates a network slice
+      description: Updates a network slice
+      operationId: updateSlice
+      parameters:
+        - name: sliceId
+          in: path
+          description: Network slice id to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Update an existent network slice in the infrastructure
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SliceCreate'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slice'
+        '404':
+          description: Network slice not found
+        '500':
+          description: Internal error
+    delete:
+      tags:
+        - Network slices
+      summary: Deletes a network slice
+      description: Delete a network slice
+      operationId: deleteSlice
+      parameters:
+        - name: sliceId
+          in: path
+          description: Network slice id to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+        '404':
+          description: Network slice not found
+        '500':
+          description: Internal error
+  /links:
+    post:
+      tags:
+        - Links
+      summary: Add an array of link information
+      description: Add an array of link information
+      operationId: addLinksInfo
+      requestBody:
+        description: Associate link metrics to a network link
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Link'
+      responses:
+        '400':
+          description: Invalid input
+        '500':
+          description: Internal error
+    get:
+      tags:
+        - Links
+      summary: Gets the existing link information
+      description: Gets the existing link information
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Link'
+        '500':
+          description: Internal error
+  /flowrules:
+    get:
+      tags:
+        - Flow Rules
+      summary: Gets the existing flow rules
+      description: Gets the existing flow rules
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Flowrule'
+        '500':
+          description: Internal error
+components:
+  schemas:
+    Slice:
+      description: A network slice in the network
+      required:
+        - id
+        - service_slice_type_sst
+        - downlink_user_throughput_bps_ue
+        - uplink_user_throughput_bps_ue
+        - e2e_latency_ms
+        - loss_probability
+        - jitter
+        - dscp_levels
+        - _5qi_levels
+        - active
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 15
+        use_case_type:
+          type: string
+          example: This network slice is used for video streaming
+        service_slice_type_sst:
+          type: string
+          description: Network slice type
+          enum:
+            - eMBB
+            - uRLLC
+            - mMTC
+            - uLBC
+          minItems: 1
+        downlink_user_throughput_bps_ue:
+          type: number
+          description: Downlink bandwidth in bps
+          format: double
+          example: 100000
+        uplink_user_throughput_bps_ue:
+          type: number
+          description: Uplink bandwidth in bps
+          format: double
+          example: 100000
+        e2e_latency_ms:
+          type: number
+          description: Latency in milliseconds
+          format: double
+          example: 10
+        loss_probability:
+          type: number
+          description: Tolerable loss probability
+          format: double
+          maximum: 100
+          example: 0.1
+        jitter:
+          type: number
+          description: Tolerable jitter in milliseconds
+          format: double
+          example: 13
+        dscp_levels:
+          type: array
+          items:
+            type: integer
+            format: int64
+            description: An array of the decimal dscp values that the slice supports
+          example: [18,20,22]
+        _5qi_levels:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: An array of the decimal dscp values that the slice supports
+          example: [7,8]
+        active:
+          type: boolean
+          description: If the network slice is active in the network
+          example: True
+    SliceCreate:
+      description: A network slice in the network (used for creating)
+      required:
+        - service_slice_type_sst
+        - downlink_user_throughput_bps_ue
+        - uplink_user_throughput_bps_ue
+        - e2e_latency_ms
+        - loss_probability
+        - jitter
+        - dscp_levels
+        - _5qi_levels
+        - active
+      type: object
+      properties:
+        use_case_type:
+          type: string
+          example: This network slice is used for video streaming
+        service_slice_type_sst:
+          type: string
+          description: Network slice type
+          enum:
+            - eMBB
+            - uRLLC
+            - mMTC
+            - uLBC
+          minItems: 1
+        downlink_user_throughput_bps_ue:
+          type: number
+          description: Downlink bandwidth in bps
+          format: double
+          example: 100000
+        uplink_user_throughput_bps_ue:
+          type: number
+          description: Uplink bandwidth in bps
+          format: double
+          example: 100000
+        e2e_latency_ms:
+          type: number
+          description: Latency in milliseconds
+          format: double
+          example: 10
+        loss_probability:
+          type: number
+          description: Tolerable loss probability
+          format: double
+          maximum: 100
+          example: 0.1
+        jitter:
+          type: number
+          description: Tolerable jitter in milliseconds
+          format: double
+          example: 13
+        dscp_levels:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: An array of the decimal dscp values that the slice supports
+          example: [18,20,22]
+        _5qi_levels:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: An array of the decimal dscp values that the slice supports
+          example: [7,8]
+        active:
+          type: boolean
+          description: If the network slice is active in the network
+          example: True
+    Link:
+      description: A link in the network
+      required:
+        - sw_id_src
+        - sw_id_dst
+        - port_numb_src
+        - port_numb_dst
+        - bandwith
+        - latency
+        - jitter
+        - loss_prob
+        - energy_consumption
+      type: object
+      properties:
+        sw_id_src:
+          type: string
+          description: Id of the switch
+          example: 'of:0000000000000001'
+        sw_id_dst:
+          type: string
+          description: Id of the switch
+          example: 'of:0000000000000002'
+        port_numb_src:
+          type: integer
+          format: int64
+          description: Connected port that belongs to sw_id_src
+          example: 1
+        port_numb_dst:
+          type: integer
+          format: int64
+          description: Connected port that belongs to sw_id_dst
+          example: 2
+        bandwith:
+          type: number
+          format: double
+          description: Bandwith of the link in bps
+          example: 100000
+        latency:
+          type: number
+          format: double
+          description: Latency of the link in milliseconds
+          example: 10
+        jitter:
+          type: number
+          format: double
+          description: Jitter in the link in milliseconds
+          example: 10
+        loss_prob:
+          type: number
+          format: double
+          description: Percentage of packet loss in the link
+          maximum: 100
+          example: 0.1
+        energy_consumption:
+          type: number
+          format: double
+          description: Estimated energy consumption when using the link in Watts
+          example: 200
+    Flowrule:
+      description: A flowrule in the network
+      required:
+        - id
+        - state
+        - bytes
+        - packets
+        - duration_treatment
+        - priority
+        - table_name
+        - app_id
+        - group_id
+        - timeout
+        - hard_timeout
+        - permanent
+        - selector
+        - treatment
+        - device_uri
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of this flow
+          example: '180000be641e06'
+        state:
+          type: string
+          description: The flow entry state
+          example: 'ADDED'
+        bytes:
+          type: integer
+          format: int64
+          description: Number of bytes this flow rule has matched
+          example: 11676
+        packets:
+          type: integer
+          format: int64
+          description: Number of packets this flow rule has matched
+          example: 84
+        duration_treatment:
+          type: integer
+          format: int64
+          description: Number of seconds this flow rule has been applied
+          example: 400
+        priority:
+          type: integer
+          format: int64
+          description: Flow rule priority given in natural order (Higher numbers mean higher priorities)
+          example: 5
+        table_name:
+          type: string
+          description: The table identifier for this rule
+          example: '0'
+        app_id:
+          type: integer
+          format: int64
+          description: The application id of this flow
+          example: 24
+        group_id:
+          type: integer
+          format: int64
+          description: The group id of this flow
+          example: 0
+        timeout:
+          type: integer
+          format: int64
+          description: The timeout for this flow requested by an application
+          example: 0
+        hard_timeout:
+          type: integer
+          format: int64
+          description: The hard timeout for this flow requested by an application. This parameter configure switch's flow hard timeout. In case of controller-switch connection lost, this variable can be useful
+          example: 0
+        permanent:
+          type: boolean
+          description: Whether the flow is permanent (does not time out)
+          example: true
+        selector:
+          type: string
+          description: The traffic selector that identifies what traffic this rule should apply to
+          example: 'DefaultTrafficSelector{criteria=[ETH_TYPE:ipv4]}'
+        treatment:
+          type: string
+          description: The traffic treatment that applies to selected traffic
+          example: 'DefaultTrafficTreatment{immediate=[OUTPUT:CONTROLLER], deferred=[], transition=None, meter=[], cleared=false, StatTrigger=null, metadata=null}'
+        device_uri:
+          type: string
+          description: The identity of the device where this rule applies
+          example: 'of:0000000000000001'
