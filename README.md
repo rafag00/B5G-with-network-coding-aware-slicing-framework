@@ -77,5 +77,4 @@ feature:install pax-jdbc-postgresql
 jdbc:ds-create -dc org.postgresql.Driver -url "jdbc:postgresql://IP_OF_DB:5432/DB_NAME" --username postgres --password postgres db
 ```
 
-## License# B5G-with-network-coding-aware-slicing-framework
-This framework was developed as part of the master thesis "Boosting 5G with Network Coding-Aware Slicing"
+## License
